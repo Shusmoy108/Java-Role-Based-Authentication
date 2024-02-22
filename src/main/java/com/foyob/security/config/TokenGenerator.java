@@ -32,10 +32,10 @@ public class TokenGenerator {
         Instant now = Instant.now();
 
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
-                .issuer("myApp")
+                .issuer("foyob")
                 .issuedAt(now)
                 .expiresAt(now.plus(5, ChronoUnit.MINUTES))
-                .subject(user.getId())
+                .subject(user.getUsername())
                 .build();
 
         return accessTokenEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
@@ -46,10 +46,10 @@ public class TokenGenerator {
         Instant now = Instant.now();
 
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
-                .issuer("myApp")
+                .issuer("foyob")
                 .issuedAt(now)
                 .expiresAt(now.plus(30, ChronoUnit.DAYS))
-                .subject(user.getId())
+                .subject(user.getUsername())
                 .build();
 
         return refreshTokenEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();

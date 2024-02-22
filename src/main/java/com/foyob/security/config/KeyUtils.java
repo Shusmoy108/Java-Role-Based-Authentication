@@ -44,24 +44,29 @@ public class KeyUtils {
     @Value("${refresh-token.public}")
     private String refreshTokenPublicKeyPath;
 
-    private KeyPair _accessTokenKeyPair;
-    private KeyPair _refreshTokenKeyPair;
+    private KeyPair accessTokenKeyPair;
+    private KeyPair refreshTokenKeyPair;
 
     private KeyPair getAccessTokenKeyPair() {
-        if (Objects.isNull(_accessTokenKeyPair)) {
-            _accessTokenKeyPair = getKeyPair(accessTokenPublicKeyPath, accessTokenPrivateKeyPath);
+    	log.debug("Entered getAccessTokenKeyPair Function");
+        if (Objects.isNull(accessTokenKeyPair)) {
+            accessTokenKeyPair = getKeyPair(accessTokenPublicKeyPath, accessTokenPrivateKeyPath);
         }
-        return _accessTokenKeyPair;
+        log.debug("Access Token KeyPair: {}",accessTokenKeyPair);
+        return accessTokenKeyPair;
     }
 
     private KeyPair getRefreshTokenKeyPair() {
-        if (Objects.isNull(_refreshTokenKeyPair)) {
-            _refreshTokenKeyPair = getKeyPair(refreshTokenPublicKeyPath, refreshTokenPrivateKeyPath);
+    	log.debug("Entered getRefreshTokenKeyPair Function");
+        if (Objects.isNull(refreshTokenKeyPair)) {
+            refreshTokenKeyPair = getKeyPair(refreshTokenPublicKeyPath, refreshTokenPrivateKeyPath);
         }
-        return _refreshTokenKeyPair;
+        log.debug("Refresh Token KeyPair: {}",refreshTokenKeyPair);
+        return refreshTokenKeyPair;
     }
 
     private KeyPair getKeyPair(String publicKeyPath, String privateKeyPath) {
+    	log.debug("Entered getKeyPair Function");
         KeyPair keyPair;
 
         File publicKeyFile = new File(publicKeyPath);
@@ -83,11 +88,13 @@ public class KeyUtils {
                 keyPair = new KeyPair(publicKey, privateKey);
                 return keyPair;
             } catch (NoSuchAlgorithmException | IOException | InvalidKeySpecException e) {
-                throw new RuntimeException(e);
+            	log.error("In getKeyPair Catch: {}",e);
+                //throw new RuntimeException(e);
             }
         } else {
             if (Arrays.stream(environment.getActiveProfiles()).anyMatch(s -> s.equals("prod"))) {
-                throw new RuntimeException("public and private keys don't exist");
+            	log.error("In getKeyPair Catch: public and private keys don't exist for prod");
+            	//throw new RuntimeException("public and private keys don't exist");
             }
         }
 
@@ -110,23 +117,28 @@ public class KeyUtils {
                 fos.write(keySpec.getEncoded());
             }
         } catch (NoSuchAlgorithmException | IOException e) {
+        	log.error("In getKeyPair Catch: {}",e);
             throw new RuntimeException(e);
         }
-
+        log.info("Suceessfully Generated KeyPair: {}",keyPair);
         return keyPair;
     }
 
 
     public RSAPublicKey getAccessTokenPublicKey() {
+    	log.debug("getAccessTokenPublicKey: {}",getAccessTokenKeyPair().getPublic());
         return (RSAPublicKey) getAccessTokenKeyPair().getPublic();
     };
     public RSAPrivateKey getAccessTokenPrivateKey() {
+    	log.debug("getAccessTokenPrivateKey: {}",getAccessTokenKeyPair().getPrivate());
         return (RSAPrivateKey) getAccessTokenKeyPair().getPrivate();
     };
     public RSAPublicKey getRefreshTokenPublicKey() {
+    	log.debug("getRefreshTokenPublicKey: {}",getRefreshTokenKeyPair().getPublic());
         return (RSAPublicKey) getRefreshTokenKeyPair().getPublic();
     };
     public RSAPrivateKey getRefreshTokenPrivateKey() {
+    	log.debug("getRefreshTokenPrivateKey: {}",getRefreshTokenKeyPair().getPrivate());
         return (RSAPrivateKey) getRefreshTokenKeyPair().getPrivate();
     };
 }

@@ -1,9 +1,9 @@
 package com.foyob.security.model;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,18 +23,18 @@ public class User implements UserDetails {
 	private String id;
 	
 	@NonNull
-	//@Unique
+	@Indexed(unique=true)
 	private String username;
 	
 	@NonNull
 	private String password;
 	
 	@NonNull
-	private String role;
+	private Role role;
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return Collections.emptyList();
+		return role.getAuthorities();
 	}
 
 	@Override

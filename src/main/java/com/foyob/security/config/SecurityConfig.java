@@ -23,6 +23,7 @@ import org.springframework.security.oauth2.server.resource.web.access.BearerToke
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.foyob.security.model.Role;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -51,14 +52,14 @@ public class SecurityConfig {
     @Bean
     @Primary
     JwtDecoder jwtAccessTokenDecoder() {
-    	log.info("Creating jwtAccessTokenDecoder");
+    	log.debug("Creating jwtAccessTokenDecoder");
         return NimbusJwtDecoder.withPublicKey(keyUtils.getAccessTokenPublicKey()).build();
     }
 
     @Bean
     @Primary
     JwtEncoder jwtAccessTokenEncoder() {
-    	log.info("Creating jwtAccessTokenEncoder");
+    	log.debug("Creating jwtAccessTokenEncoder");
         JWK jwk = new RSAKey
                 .Builder(keyUtils.getAccessTokenPublicKey())
                 .privateKey(keyUtils.getAccessTokenPrivateKey())
@@ -70,14 +71,14 @@ public class SecurityConfig {
     @Bean
     @Qualifier("jwtRefreshTokenDecoder")
     JwtDecoder jwtRefreshTokenDecoder() {
-    	log.info("Creating jwtRefreshTokenDecoder");
+    	log.debug("Creating jwtRefreshTokenDecoder");
         return NimbusJwtDecoder.withPublicKey(keyUtils.getRefreshTokenPublicKey()).build();
     }
 
     @Bean
     @Qualifier("jwtRefreshTokenEncoder")
     JwtEncoder jwtRefreshTokenEncoder() {
-    	log.info("Creating jwtRefreshTokenEncoder");
+    	log.debug("Creating jwtRefreshTokenEncoder");
         JWK jwk = new RSAKey
                 .Builder(keyUtils.getRefreshTokenPublicKey())
                 .privateKey(keyUtils.getRefreshTokenPrivateKey())
@@ -89,15 +90,16 @@ public class SecurityConfig {
     @Bean
     @Qualifier("jwtRefreshTokenAuthProvider")
     JwtAuthenticationProvider jwtRefreshTokenAuthProvider() {
-    	log.info("Creating jwtRefreshTokenAuthProvider");
+    	log.debug("Creating jwtRefreshTokenAuthProvider");
         JwtAuthenticationProvider provider = new JwtAuthenticationProvider(jwtRefreshTokenDecoder());
         provider.setJwtAuthenticationConverter(jwtToUserConverter);
+        log.info("jwtRefreshTokenAuthProvider = {}",provider);
         return provider;
     }
 
     @Bean
     DaoAuthenticationProvider daoAuthenticationProvider() {
-    	log.info("Creating daoAuthenticationProvider");
+    	log.debug("Creating daoAuthenticationProvider");
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder);
         provider.setUserDetailsService(userDetailsManager);
@@ -107,9 +109,10 @@ public class SecurityConfig {
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    	log.info("Creating securityFilterChain");
+    	log.debug("Creating securityFilterChain");
         http.authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/api/auth/*").permitAll()
+                        .requestMatchers("/api/user/**").hasRole(Role.ADMIN.name())
                         .anyRequest().authenticated()
                 )
         		.csrf(AbstractHttpConfigurer::disable)
